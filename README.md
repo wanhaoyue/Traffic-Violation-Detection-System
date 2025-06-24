@@ -1,7 +1,8 @@
 # Traffic-Violation-Detection-System
 This project is a Django-based web application designed to assist JPJ (Jabatan Pengangkutan Jalan) in detecting traffic violations and recognizing license plates from user-submitted images. The system leverages YOLO (You Only Look Once) object detection, data analytics, and AI-driven recommendations to automate and enhance traffic enforcement processes.
 
-#Features
+## 🚀 Features
+
 
   Image Upload
   Users can upload images of suspected traffic violations for automated analysis.
@@ -21,7 +22,7 @@ This project is a Django-based web application designed to assist JPJ (Jabatan P
   AI Recommendations
   Offers insights and recommendations based on historical violation data using CRISP-DM methodology.
 
-#Technologies Used
+## 🛠️ Technologies Used
   Backend: Django (Python)
   
   Frontend: HTML/CSS/JavaScript (Django templates)
