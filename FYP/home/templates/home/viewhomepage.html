@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Violation Detection System</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a237e',secondary:'#ff5722'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+}
+.stats-counter {
+counter-reset: stat;
+animation: countUp 2s forwards;
+}
+@keyframes countUp {
+from { counter-increment: stat 0; }
+to { counter-increment: stat var(--target-value); }
+}
+.stats-counter::after {
+content: counter(stat);
+}
+.masonry-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+grid-auto-rows: 10px;
+grid-gap: 20px;
+}
+.masonry-item {
+grid-row-end: span var(--span);
+}
+.lightbox {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.9);
+z-index: 50;
+justify-content: center;
+align-items: center;
+}
+.lightbox.active {
+display: flex;
+}
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full bg-primary text-white z-40 shadow-md">
+<div class="container mx-auto px-6 py-4 flex justify-between items-center">
+<h1 class="text-2xl font-bold">Traffic Violation Detection System</h1>
+<div class="flex items-center space-x-4">
+  <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-all !rounded-button whitespace-nowrap border border-green-700 inline-block no-underline">Back to Dashboard</a>
+</div>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="pt-24 w-full relative overflow-hidden" style="background-image: url('https://readdy.ai/api/search-image?query=futuristic%20traffic%20monitoring%20system%20with%20digital%20overlay%2C%20high-tech%20urban%20traffic%20management%2C%20blue%20tint%2C%20clean%20modern%20aesthetic%2C%20city%20traffic%20with%20data%20visualization%20elements%2C%20professional%20monitoring%20interface%2C%20traffic%20cameras%20and%20sensors%2C%20digital%20city%20infrastructure&width=1920&height=1080&seq=1&orientation=landscape'); background-size: cover; background-position: center; height: 100vh;">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/40"></div>
+<div class="container mx-auto px-6 h-full flex items-center relative z-10">
+<div class="w-full max-w-2xl text-white">
+<h2 class="text-5xl font-bold mb-6">Intelligent Traffic Monitoring</h2>
+<p class="text-xl mb-8">Advanced AI-powered system for detection and management of traffic violations, enhancing road safety and urban mobility.</p>
+</div>
+</div>
+<!-- Animated particles -->
+<div id="particles" class="absolute inset-0 z-0 opacity-30"></div>
+</section>
+<!-- Key Features -->
+<section class="py-20 bg-white">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-4xl font-bold text-gray-900 mb-4">Key System Features</h2>
+<p class="text-xl text-gray-600 max-w-3xl mx-auto">Our advanced traffic violation detection system combines cutting-edge AI with robust infrastructure to deliver comprehensive monitoring solutions.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="bg-white p-8 rounded shadow-lg hover:shadow-xl transition-all border border-gray-100">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+<span class="w-8 h-8 flex items-center justify-center text-primary">
+<i class="ri-eye-line ri-2x"></i>
+</span>
+</div>
+<h3 class="text-xl font-semibold mb-3">Detection by Input</h3>
+<p class="text-gray-600">Instantly identify and log traffic violations with advanced computer vision algorithms.</p>
+</div>
+<div class="bg-white p-8 rounded shadow-lg hover:shadow-xl transition-all border border-gray-100">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+<span class="w-8 h-8 flex items-center justify-center text-primary">
+<i class="ri-database-2-line ri-2x"></i>
+</span>
+</div>
+<h3 class="text-xl font-semibold mb-3">Data Analytics</h3>
+<p class="text-gray-600">Comprehensive analytics dashboard for tracking patterns and generating actionable insights.</p>
+</div>
+<div class="bg-white p-8 rounded shadow-lg hover:shadow-xl transition-all border border-gray-100">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+<span class="w-8 h-8 flex items-center justify-center text-primary">
+<i class="ri-licence-line ri-2x"></i>
+</span>
+</div>
+<h3 class="text-xl font-semibold mb-3">License Plate Recognition</h3>
+<p class="text-gray-600">Advanced optical character recognition to detect and record vehicle license plates for violation tracking.</p>
+</div>
+<div class="bg-white p-8 rounded shadow-lg hover:shadow-xl transition-all border border-gray-100">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+<span class="w-8 h-8 flex items-center justify-center text-primary">
+<i class="ri-time-line ri-2x"></i>
+</span>
+</div>
+<h3 class="text-xl font-semibold mb-3">User Friendly</h3>
+<p class="text-gray-600">Intuitive interface with rapid response times for efficient management and analysis of traffic violations.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- System Architecture -->
+<section class="py-20 bg-white">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-4xl font-bold text-gray-900 mb-4">System Architecture</h2>
+<p class="text-xl text-gray-600 max-w-3xl mx-auto">Our comprehensive solution integrates multiple technologies to create a robust traffic monitoring ecosystem.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div>
+<!-- Updated image path -->
+<img src="{% static 'home/System Flow.jpg' %}" alt="System Architecture Diagram" class="rounded-lg shadow-xl w-full">
+</div>
+<div>
+<div class="space-y-6">
+<div class="flex items-start">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+<span class="w-6 h-6 flex items-center justify-center text-primary">
+<i class="ri-camera-line ri-lg"></i>
+</span>
+</div>
+<div>
+<h3 class="text-xl font-semibold mb-2">Data Acquisition Layer</h3>
+<p class="text-gray-600">Users upload traffic images through a secure login interface. This phase ensures only authorized users can access the system and submit valid inputs for analysis.</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+<span class="w-6 h-6 flex items-center justify-center text-primary">
+<i class="ri-cpu-line ri-lg"></i>
+</span>
+</div>
+<div>
+<h3 class="text-xl font-semibold mb-2">Processing Core</h3>
+<p class="text-gray-600">A deep learning model processes input images to detect traffic violations such as, no helmet, no seatbelt, using mobile phone, and more than 2 people on a motorcycle. It also distinguishes compliant behaviors like wearing helmets or seatbelts.</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+<span class="w-6 h-6 flex items-center justify-center text-primary">
+<i class="ri-database-line ri-lg"></i>
+</span>
+</div>
+<div>
+<h3 class="text-xl font-semibold mb-2">Data Management System</h3>
+<p class="text-gray-600">All detected violations and recognized license plates are stored in a centralized, secure database. This allows structured storage of violation records, timestamps, and associated plate numbers for further action and review.</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+<span class="w-6 h-6 flex items-center justify-center text-primary">
+<i class="ri-dashboard-3-line ri-lg"></i>
+</span>
+</div>
+<div>
+<h3 class="text-xl font-semibold mb-2">User Interface</h3>
+<p class="text-gray-600">An interactive web dashboard allows users to view detection results, view statistics, and receive recommendations for traffic management authorities and law enforcement agencies.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Data Visualization -->
+<section class="py-20 bg-white">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-4xl font-bold text-gray-900 mb-4">Performance Analytics</h2>
+<p class="text-xl text-gray-600 max-w-3xl mx-auto">Comprehensive data insights demonstrating the impact of our system on traffic management and safety.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+<div class="bg-white p-6 rounded shadow-lg">
+<h3 class="text-xl font-semibold mb-4">Violation Types Distribution</h3>
+<div class="w-full h-80 flex items-center justify-center">
+    <img src="{% static 'home/Violations Distribution.png' %}" alt="Violation Types Distribution Chart" class="max-w-full max-h-full object-contain">
+</div>
+</div>
+<div class="bg-white p-6 rounded shadow-lg">
+<h3 class="text-xl font-semibold mb-4">AI Recommendations for Violations</h3>
+<div class="w-full h-80 flex items-center justify-center">
+    <img src="{% static 'home/AI Recommendations.png' %}" alt="AI Recommendations Chart" class="max-w-full max-h-full object-contain">
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Target Audience -->
+<section class="py-20 bg-gray-50">
+  <div class="container mx-auto px-6">
+  <div class="text-center mb-16">
+  <h2 class="text-4xl font-bold text-gray-900 mb-4">Who Benefits</h2>
+  <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our system is specifically designed to serve the Road Transport Department Malaysia (JPJ) in enhancing traffic law enforcement and operational efficiency.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-1 gap-8">
+  <div class="bg-white p-8 rounded shadow-lg flex">
+  <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mr-6 flex-shrink-0">
+  <span class="w-8 h-8 flex items-center justify-center text-primary">
+  <i class="ri-government-line ri-2x"></i>
+  </span>
+  </div>
+  <div>
+  <h3 class="text-xl font-semibold mb-3">Road Transport Department Malaysia (JPJ)</h3>
+  <p class="text-gray-600 mb-4">Empowering JPJ with automation and data-driven insights to strengthen traffic enforcement, streamline operations, and support policy making.</p>
+  <ul class="space-y-2 text-gray-600">
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Automated detection and license plate recognition for faster case processing
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Cost savings through reduced manual patrol and image review
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Scalable violation handling without increasing manpower
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Data-driven identification of high-risk zones and strategic resource allocation
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Structured evidence compilation with annotated images and timestamps
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Enhanced transparency, accountability, and standardized enforcement workflow
+  </li>
+  <li class="flex items-center">
+  <span class="w-5 h-5 flex items-center justify-center text-secondary mr-2">
+  <i class="ri-check-line"></i>
+  </span>
+  Support for future digital transformation and modernization initiatives
+  </li>
+  </ul>
+  </div>
+  </div>
+  </div>
+  </div>
+  </section>  
+</body>
+</html>

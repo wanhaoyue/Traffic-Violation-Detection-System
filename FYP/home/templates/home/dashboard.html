@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" class="transition duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Traffic Violation Detection System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1a237e',
+            secondary: '#ff5722'
+          },
+          borderRadius: {
+            button: '8px'
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-image: url('{% static "images/detection-bg.jpg" %}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .font-pacifico {
+      font-family: 'Pacifico', cursive;
+    }
+    @keyframes zoomIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-zoom {
+      animation: zoomIn 0.8s ease-out;
+    }
+    .dark body {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{% static "images/detection-bg.jpg" %}');
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen flex flex-col bg-white/70 dark:bg-black/70">
+    <!-- Header -->
+    <header class="bg-primary text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <!-- Left: Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <i class="ri-traffic-light-line ri-xl"></i>
+          <h1 class="text-xl md:text-2xl font-bold">Traffic Violation Detection System</h1>
+        </div>
+
+        <!-- Right: Dark Mode + Profile Icon -->
+        <div class="flex items-center space-x-3">
+          <!-- Dark Mode Toggle -->
+          <button id="themeToggle" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+            <i class="ri-moon-line text-white text-xl" id="toggleIcon"></i>
+          </button>
+
+          <!-- Profile Icon -->
+          <a href="{% url 'view_profile' %}" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition" title="Profile">
+            <i class="ri-user-line text-white text-xl"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Title -->
+    <main class="flex-1 container mx-auto px-6 py-10">
+      <div class="text-center mb-10">
+        <h2 class="text-6xl font-pacifico font-bold text-white bg-gradient-to-r from-primary to-secondary py-3 px-8 rounded-xl shadow-lg inline-block animate-zoom">
+          Dashboard
+        </h2>
+      </div>
+
+      <!-- Login message -->
+      {% if request.session.user_id %}
+      <div class="text-center mb-6">
+        <p class="text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300 py-2 px-4 rounded-lg inline-block">
+          <i class="ri-check-line mr-1"></i>{{ request.session.user_id }} login successful!
+        </p>
+      </div>
+      {% endif %}
+
+      <!-- Action Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <!-- Detection Page -->
+        <a href="{% url 'detect_image' %}" class="group transition transform hover:scale-[1.02]">
+          <div class="w-full h-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl p-6 flex flex-col items-center justify-center space-y-5 border border-gray-200 dark:border-gray-700">
+            <div class="w-16 h-16 flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full">
+              <i class="ri-camera-line ri-2x text-primary"></i>
+            </div>
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">Detection Page</h3>
+              <p class="text-gray-600 dark:text-gray-300">Monitor and detect traffic violations</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Violation Records -->
+        <a href="{% url 'view_violations' %}" class="group transition transform hover:scale-[1.02]">
+          <div class="w-full h-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl p-6 flex flex-col items-center justify-center space-y-5 border border-gray-200 dark:border-gray-700">
+            <div class="w-16 h-16 flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full">
+              <i class="ri-file-list-3-line ri-2x text-primary"></i>
+            </div>
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">View Violation Records</h3>
+              <p class="text-gray-600 dark:text-gray-300">Manage violation history</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- View Profile -->
+        <a href="{% url 'view_homepage' %}" class="group transition transform hover:scale-[1.02]">
+          <div class="w-full h-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl p-6 flex flex-col items-center justify-center space-y-5 border border-gray-200 dark:border-gray-700">
+            <div class="w-16 h-16 flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full">
+              <i class="ri-user-settings-line ri-2x text-primary"></i>
+            </div>
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">View Home Page</h3>
+              <p class="text-gray-600 dark:text-gray-300">System functionalities</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Logout -->
+        <a href="{% url 'logout' %}" class="group transition transform hover:scale-[1.02]">
+          <div class="w-full h-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl p-6 flex flex-col items-center justify-center space-y-5 border border-gray-200 dark:border-gray-700">
+            <div class="w-16 h-16 flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full">
+              <i class="ri-logout-box-line ri-2x text-primary"></i>
+            </div>
+            <div class="text-center">
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">Logout</h3>
+              <p class="text-gray-600 dark:text-gray-300">Securely sign out</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="container mx-auto px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        © 2025 Traffic Violation Detection System. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Check for saved theme preference or default to light
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      document.getElementById('toggleIcon').classList.remove('ri-moon-line');
+      document.getElementById('toggleIcon').classList.add('ri-sun-line');
+    }
+
+    // Set up theme toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('themeToggle');
+      const icon = document.getElementById('toggleIcon');
+      const htmlEl = document.documentElement;
+
+      toggleBtn.addEventListener('click', () => {
+        if (htmlEl.classList.contains('dark')) {
+          htmlEl.classList.remove('dark');
+          icon.classList.remove('ri-sun-line');
+          icon.classList.add('ri-moon-line');
+          localStorage.setItem('theme', 'light');
+        } else {
+          htmlEl.classList.add('dark');
+          icon.classList.remove('ri-moon-line');
+          icon.classList.add('ri-sun-line');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
