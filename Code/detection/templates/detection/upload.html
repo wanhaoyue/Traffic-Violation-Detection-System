@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" class="transition duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detection Page - Traffic Violation Detection System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1a237e',
+            secondary: '#ff5722'
+          },
+          borderRadius: {
+            button: '8px'
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-image: url('{% static "images/detection-bg.jpg" %}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .font-pacifico {
+      font-family: 'Pacifico', cursive;
+    }
+    @keyframes zoomIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-zoom {
+      animation: zoomIn 0.8s ease-out;
+    }
+    .dark body {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{% static "images/detection-bg.jpg" %}');
+    }
+    .file-drop-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .dark .file-drop-area {
+      border-color: #555;
+    }
+    .file-drop-area:hover, .file-drop-area.dragover {
+      border-color: #1a237e;
+      background-color: rgba(26, 35, 126, 0.05);
+    }
+    .dark .file-drop-area:hover, .dark .file-drop-area.dragover {
+      border-color: #3949ab;
+      background-color: rgba(57, 73, 171, 0.1);
+    }
+    .file-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .file-preview-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #f5f5f5;
+    }
+    .dark .file-preview-item {
+      background-color: #2d3748;
+    }
+    .file-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .file-preview-item .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .dark .file-preview-item .remove-btn {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .location-time-container {
+      transition: all 0.3s ease;
+    }
+    .location-time-container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    .custom-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+    }
+    /* Styles for date and time inputs */
+    input[type="date"], input[type="time"] {
+      position: relative;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    
+    .dark input[type="date"]::-webkit-calendar-picker-indicator,
+    .dark input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+    
+    /* Make the input field look more like a button */
+    .date-time-input {
+      padding-right: 30px; /* Space for the calendar/clock icon */
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen flex flex-col bg-white/70 dark:bg-black/70">
+    <!-- Header -->
+    <header class="bg-primary text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <!-- Left: Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <i class="ri-traffic-light-line ri-xl"></i>
+          <h1 class="text-xl md:text-2xl font-bold">Traffic Violation Detection System</h1>
+        </div>
+
+        <!-- Right: Dark Mode + Profile Icon -->
+        <div class="flex items-center space-x-3">
+          <!-- Dark Mode Toggle -->
+          <button id="themeToggle" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+            <i class="ri-moon-line text-white text-xl" id="toggleIcon"></i>
+          </button>
+
+          <!-- Profile Icon -->
+          <a href="{% url 'view_profile' %}" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition" title="Profile">
+            <i class="ri-user-line text-white text-xl"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-5xl">
+      <!-- Page Title -->
+      <div class="text-center mb-10">
+        <h2 class="text-6xl font-pacifico font-bold text-white bg-gradient-to-r from-primary to-secondary py-3 px-8 rounded-xl shadow-lg inline-block animate-zoom">
+          Detection Page
+        </h2>
+        <p class="text-gray-180 dark:text-gray-300 mt-4">Monitor and detect traffic violations</p>
+      </div>
+
+      <!-- Traffic Violation Detection System Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-primary dark:text-blue-400 mb-4">Traffic Violation Detection System</h2>
+        <p class="text-gray-700 dark:text-gray-300 mb-4">This system can detect traffic violations only:</p>
+        
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">For Car:</h3>
+            <ul class="space-y-2 pl-6">
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-green-600 dark:text-green-500 mr-2 mt-0.5">
+                  <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <span class="text-green-700 dark:text-green-400">1. person-seatbelt (Non violation)</span>
+              </li>
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-red-600 dark:text-red-500 mr-2 mt-0.5">
+                  <i class="ri-error-warning-line"></i>
+                </div>
+                <span class="text-red-700 dark:text-red-400">2. person-noseatbelt</span>
+              </li>
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-red-600 dark:text-red-500 mr-2 mt-0.5">
+                  <i class="ri-error-warning-line"></i>
+                </div>
+                <span class="text-red-700 dark:text-red-400">3. phone</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">For Motorcycle:</h3>
+            <ul class="space-y-2 pl-6">
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-green-600 dark:text-green-500 mr-2 mt-0.5">
+                  <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <span class="text-green-700 dark:text-green-400">1. With Helmet (Non violation)</span>
+              </li>
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-red-600 dark:text-red-500 mr-2 mt-0.5">
+                  <i class="ri-error-warning-line"></i>
+                </div>
+                <span class="text-red-700 dark:text-red-400">2. Without Helmet</span>
+              </li>
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-red-600 dark:text-red-500 mr-2 mt-0.5">
+                  <i class="ri-error-warning-line"></i>
+                </div>
+                <span class="text-red-700 dark:text-red-400">3. more-than-2-person-on-2-wheeler</span>
+              </li>
+              <li class="flex items-start">
+                <div class="w-5 h-5 flex items-center justify-center text-green-600 dark:text-green-500 mr-2 mt-0.5">
+                  <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <span class="text-green-700 dark:text-green-400">4. 2-or-less-person-on-2-wheeler (Non violation)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location and Time Selection Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 location-time-container">
+        <h2 class="text-2xl font-bold text-primary dark:text-blue-400 mb-4">
+          <i class="ri-map-pin-time-line mr-2"></i>Location and Time Information
+        </h2>
+        <p class="text-gray-700 dark:text-gray-300 mb-6">Please provide the location and time details of the traffic incident:</p>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Location Selection -->
+          <div class="space-y-3">
+            <label for="location" class="block text-gray-700 dark:text-gray-300 font-medium">
+              <div class="flex items-center mb-1">
+                <i class="ri-map-pin-line mr-2 text-primary dark:text-blue-400"></i>
+                <span>Location (State)</span>
+              </div>
+            </label>
+            <select id="location" name="location" class="custom-select w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-500">
+              <option value="" selected disabled>Select a state in Malaysia</option>
+              <option value="Johor">Johor</option>
+              <option value="Kedah">Kedah</option>
+              <option value="Kelantan">Kelantan</option>
+              <option value="Kuala Lumpur">Kuala Lumpur</option>
+              <option value="Labuan">Labuan</option>
+              <option value="Melaka">Melaka</option>
+              <option value="Negeri Sembilan">Negeri Sembilan</option>
+              <option value="Pahang">Pahang</option>
+              <option value="Penang">Penang</option>
+              <option value="Perak">Perak</option>
+              <option value="Perlis">Perlis</option>
+              <option value="Putrajaya">Putrajaya</option>
+              <option value="Sabah">Sabah</option>
+              <option value="Sarawak">Sarawak</option>
+              <option value="Selangor">Selangor</option>
+              <option value="Terengganu">Terengganu</option>
+            </select>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select the state where the traffic incident occurred</p>
+          </div>
+
+          <!-- Date and Time Selection -->
+          <div class="space-y-6">
+            <!-- Date Selection -->
+            <div>
+              <label for="incidentDate" class="block text-gray-700 dark:text-gray-300 font-medium">
+                <div class="flex items-center mb-1">
+                  <i class="ri-calendar-line mr-2 text-primary dark:text-blue-400"></i>
+                  <span>Date of Incident</span>
+                </div>
+              </label>
+              <input type="date" id="incidentDate" name="incidentDate" class="date-time-input w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Click to select the date when the incident occurred</p>
+            </div>
+            
+            <!-- Time Selection -->
+            <div>
+              <label for="incidentTime" class="block text-gray-700 dark:text-gray-300 font-medium">
+                <div class="flex items-center mb-1">
+                  <i class="ri-time-line mr-2 text-primary dark:text-blue-400"></i>
+                  <span>Time of Incident</span>
+                </div>
+              </label>
+              <input type="time" id="incidentTime" name="incidentTime" class="date-time-input w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Click to select the approximate time when the incident occurred</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional Specific Location Details -->
+        <div class="mt-6">
+          <label for="locationDetails" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+            <div class="flex items-center">
+              <i class="ri-road-map-line mr-2 text-primary dark:text-blue-400"></i>
+              <span>Specific Location Details (Optional)</span>
+            </div>
+          </label>
+          <textarea id="locationDetails" name="locationDetails" rows="2" placeholder="e.g., Jalan Bukit Bintang, near KLCC, Highway E8 KM 134" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-500"></textarea>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Provide more specific location details if available</p>
+        </div>
+      </div>
+
+      <!-- Upload Images Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-primary dark:text-blue-400 mb-4">Upload Images for Detection</h2>
+        
+        <form method="POST" action="{% url 'detect_image' %}" enctype="multipart/form-data" id="uploadForm">
+          {% csrf_token %}
+          <!-- Hidden inputs for location and time data -->
+          <input type="hidden" id="locationInput" name="location">
+          <input type="hidden" id="incidentDateInput" name="incidentDate">
+          <input type="hidden" id="incidentTimeInput" name="incidentTime">
+          <input type="hidden" id="locationDetailsInput" name="locationDetails">
+          
+          <div class="file-drop-area" id="dropArea">
+            <div class="mb-3">
+              <div class="w-16 h-16 mx-auto flex items-center justify-center text-primary dark:text-blue-400">
+                <i class="ri-upload-cloud-line ri-3x"></i>
+              </div>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 mb-2">Drag and drop images here or click to browse</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">Supported formats: PNG, JPEG, JPG</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-4"><span id="fileCount">0</span>/5 images selected</p>
+            <label for="fileInput" class="bg-primary text-white py-2 px-4 rounded-button cursor-pointer inline-block whitespace-nowrap hover:bg-opacity-90 transition-all">
+              Select Files
+            </label>
+            <input type="file" id="fileInput" name="image" accept=".png,.jpg,.jpeg" multiple required>
+          </div>
+          
+          <div class="file-preview mt-6" id="filePreview"></div>
+          
+          <div class="flex flex-wrap gap-4 mt-8 justify-center">
+            <button type="submit" id="uploadBtn" class="bg-green-600 text-white py-2 px-6 rounded-button whitespace-nowrap hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <div class="flex items-center justify-center">
+                <div class="w-5 h-5 flex items-center justify-center mr-2">
+                  <i class="ri-upload-cloud-line"></i>
+                </div>
+                Upload and Detect
+              </div>
+            </button>
+            <a href="{% url 'dashboard' %}" class="border-2 border-primary text-primary py-2 px-6 rounded-button font-medium hover:bg-blue-50 transition whitespace-nowrap flex items-center justify-center">
+              <i class="ri-dashboard-line mr-2"></i>
+              Back to Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-auto">
+      <div class="container mx-auto px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        © 2025 Traffic Violation Detection System. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Check for saved theme preference or default to light
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      document.getElementById('toggleIcon').classList.remove('ri-moon-line');
+      document.getElementById('toggleIcon').classList.add('ri-sun-line');
+    }
+
+    // Set up theme toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('themeToggle');
+      const icon = document.getElementById('toggleIcon');
+      const htmlEl = document.documentElement;
+
+      toggleBtn.addEventListener('click', () => {
+        if (htmlEl.classList.contains('dark')) {
+          htmlEl.classList.remove('dark');
+          icon.classList.remove('ri-sun-line');
+          icon.classList.add('ri-moon-line');
+          localStorage.setItem('theme', 'light');
+        } else {
+          htmlEl.classList.add('dark');
+          icon.classList.remove('ri-moon-line');
+          icon.classList.add('ri-sun-line');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+      
+      // Set default date to today
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('incidentDate').value = formattedDate;
+      
+      // Location and Time data transfer to hidden form inputs
+      const locationSelect = document.getElementById('location');
+      const incidentDateInput = document.getElementById('incidentDate');
+      const incidentTimeInput = document.getElementById('incidentTime');
+      const locationDetailsInput = document.getElementById('locationDetails');
+      
+      const locationHidden = document.getElementById('locationInput');
+      const incidentDateHidden = document.getElementById('incidentDateInput');
+      const incidentTimeHidden = document.getElementById('incidentTimeInput');
+      const locationDetailsHidden = document.getElementById('locationDetailsInput');
+      
+      // Event listeners to update hidden inputs
+      locationSelect.addEventListener('change', () => {
+        locationHidden.value = locationSelect.value;
+      });
+      
+      incidentDateInput.addEventListener('change', () => {
+        incidentDateHidden.value = incidentDateInput.value;
+      });
+      
+      incidentTimeInput.addEventListener('change', () => {
+        incidentTimeHidden.value = incidentTimeInput.value;
+      });
+      
+      locationDetailsInput.addEventListener('input', () => {
+        locationDetailsHidden.value = locationDetailsInput.value;
+      });
+      
+      // Initialize hidden input values
+      incidentDateHidden.value = formattedDate;
+      
+      // File Upload Functionality
+      const dropArea = document.getElementById('dropArea');
+      const fileInput = document.getElementById('fileInput');
+      const filePreview = document.getElementById('filePreview');
+      const fileCount = document.getElementById('fileCount');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const uploadForm = document.getElementById('uploadForm');
+      
+      let files = [];
+      
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, preventDefaults, false);
+          document.body.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      // Highlight drop area when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+          dropArea.addEventListener(eventName, highlight, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, unhighlight, false);
+      });
+      
+      // Handle dropped files
+      dropArea.addEventListener('drop', handleDrop, false);
+      
+      // Handle selected files
+      fileInput.addEventListener('change', handleFiles, false);
+      
+      // Click on dropArea to trigger file input
+      dropArea.addEventListener('click', function(e) {
+          // Prevent clicking on label or button inside dropArea from triggering this
+          if (e.target !== fileInput && e.target.tagName !== 'LABEL' && e.target.tagName !== 'BUTTON') {
+              fileInput.click();
+          }
+      });
+      
+      function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+      }
+      
+      function highlight() {
+          dropArea.classList.add('dragover');
+      }
+      
+      function unhighlight() {
+          dropArea.classList.remove('dragover');
+      }
+      
+      function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const newFiles = dt.files;
+          handleFiles({ target: { files: newFiles } });
+      }
+      
+      function handleFiles(e) {
+          const newFiles = e.target.files;
+          
+          if (!newFiles || newFiles.length === 0) return;
+          
+          // Check if adding these files would exceed the limit
+          if (files.length + newFiles.length > 5) {
+              alert('You can only upload a maximum of 5 files.');
+              return;
+          }
+          
+          // Create a new FileList to be submitted with the form
+          const dataTransfer = new DataTransfer();
+          
+          // Add existing files to the data transfer object
+          files.forEach(file => {
+              dataTransfer.items.add(file);
+          });
+          
+          // Filter for only image files and add them to files array
+          for (let i = 0; i < newFiles.length; i++) {
+              const file = newFiles[i];
+              if (!file.type.match('image.*')) {
+                  alert('Please select only image files (PNG, JPEG, JPG).');
+                  continue;
+              }
+              
+              files.push(file);
+              dataTransfer.items.add(file);
+              
+              // Create preview
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                  const preview = document.createElement('div');
+                  preview.className = 'file-preview-item';
+                  preview.innerHTML = `
+                      <img src="${e.target.result}" alt="${file.name}">
+                      <div class="remove-btn" data-index="${files.length - 1}">
+                          <i class="ri-close-line"></i>
+                      </div>
+                  `;
+                  filePreview.appendChild(preview);
+                  
+                  // Add event listener to remove button
+                  preview.querySelector('.remove-btn').addEventListener('click', function() {
+                      const index = parseInt(this.getAttribute('data-index'));
+                      removeFile(index, preview);
+                  });
+              };
+              reader.readAsDataURL(file);
+          }
+          
+          // Update the file input with the selected files
+          fileInput.files = dataTransfer.files;
+          
+          updateFileCount();
+      }
+      
+      function removeFile(index, previewElement) {
+          files.splice(index, 1);
+          previewElement.remove();
+          
+          // Create a new FileList with remaining files
+          const dataTransfer = new DataTransfer();
+          files.forEach(file => {
+              dataTransfer.items.add(file);
+          });
+          
+          // Update the file input with the remaining files
+          fileInput.files = dataTransfer.files;
+          
+          // Update data-index attributes for all remaining remove buttons
+          const removeButtons = document.querySelectorAll('.remove-btn');
+          for (let i = 0; i < removeButtons.length; i++) {
+              removeButtons[i].setAttribute('data-index', i);
+          }
+          
+          updateFileCount();
+      }
+      
+      function updateFileCount() {
+          fileCount.textContent = files.length;
+          uploadBtn.disabled = files.length === 0;
+          
+          // Disable file input if max files reached
+          if (files.length >= 5) {
+              dropArea.classList.add('opacity-50');
+              dropArea.style.pointerEvents = 'none';
+          } else {
+              dropArea.classList.remove('opacity-50');
+              dropArea.style.pointerEvents = 'auto';
+          }
+      }
+      
+      // Form submission with files
+      uploadForm.addEventListener('submit', function(e) {
+          // Validate location and time fields
+          if (!locationSelect.value) {
+              e.preventDefault();
+              alert('Please select a location.');
+              locationSelect.focus();
+              return;
+          }
+          
+          if (!incidentDateInput.value) {
+              e.preventDefault();
+              alert('Please select a date.');
+              incidentDateInput.focus();
+              return;
+          }
+          
+          if (!incidentTimeInput.value) {
+              e.preventDefault();
+              alert('Please select a time.');
+              incidentTimeInput.focus();
+              return;
+          }
+          
+          if (files.length === 0) {
+              e.preventDefault();
+              alert('Please select at least one image to upload.');
+              return;
+          }
+          
+          // Transfer the latest values from inputs to hidden fields before submission
+          locationHidden.value = locationSelect.value;
+          incidentDateHidden.value = incidentDateInput.value;
+          incidentTimeHidden.value = incidentTimeInput.value;
+          locationDetailsHidden.value = locationDetailsInput.value;
+          
+          // Show submission in progress
+          uploadBtn.disabled = true;
+          uploadBtn.innerHTML = '<i class="ri-loader-line animate-spin mr-2"></i> Processing...';
+          
+          // The form will submit naturally to
+});
+    });
+  </script>
+</body>
+</html>

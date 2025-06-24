@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" class="transition duration-300">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Statistics - Traffic Violation Detection System</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#1a237e',
+              secondary: '#ff5722'
+            },
+            borderRadius: {
+              button: '8px'
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+        }
+        .dark body {
+            background-color: #1a1a1a;
+        }
+        .recommendation-section {
+            background-color: #d1fae5; /* Light green background */
+            border-left: 4px solid #10b981; /* Green left border */
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .recommendation-section {
+            background-color: #064e3b; /* Darker green for dark mode */
+            border-left: 4px solid #10b981;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <!-- CSRF Token for Django -->
+    {% csrf_token %}
+    
+    <!-- Header -->
+    <header class="bg-primary text-white shadow-lg">
+      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <i class="ri-traffic-light-line ri-xl"></i>
+          <h1 class="text-xl md:text-2xl font-bold">Traffic Violation Detection System</h1>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="themeToggle" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+            <i class="ri-moon-line text-white text-xl" id="toggleIcon"></i>
+          </button>
+          <a href="{% url 'view_profile' %}" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition" title="Profile">
+            <i class="ri-user-line text-white text-xl"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Success Message -->
+        <div id="success-message" class="flex justify-center mb-6 hidden">
+            <div class="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-4 py-2 rounded flex items-center">
+                <i class="ri-check-line mr-2"></i>
+                <span>Data loaded successfully!</span>
+            </div>
+        </div>
+        <!-- Title -->
+        <div class="text-center mb-8">
+            <h2 class="text-4xl font-bold text-gray-800 dark:text-white">Traffic Violation Statistics</h2>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- First Chart Filters -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex flex-wrap gap-4">
+                        <div>
+                            <label for="violation_type1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Detection Type:</label>
+                            <select id="violation_type1" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                {% for type in violation_types %}
+                                    <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="time_period1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Period:</label>
+                            <select id="time_period1" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                {% for period in time_periods %}
+                                    <option value="{{ period }}" {% if selected_period == period %}selected{% endif %}>{{ period }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location:</label>
+                            <select id="location1" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                <option value="">All Locations</option>
+                                {% for location in locations %}
+                                    <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>{{ location }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button id="update-chart1" class="bg-primary hover:bg-blue-900 text-white rounded-button px-4 py-2 text-sm flex items-center">
+                        <i class="ri-refresh-line mr-2"></i>
+                        Update
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Second Chart Filters -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex flex-wrap gap-4">
+                        <div>
+                            <label for="violation_type2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Detection Type:</label>
+                            <select id="violation_type2" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                {% for type in violation_types %}
+                                    <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="time_period2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Period:</label>
+                            <select id="time_period2" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                {% for period in time_periods %}
+                                    <option value="{{ period }}" {% if selected_period == period %}selected{% endif %}>{{ period }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location:</label>
+                            <select id="location2" class="w-full rounded-button border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 py-2 px-3">
+                                <option value="">All Locations</option>
+                                {% for location in locations %}
+                                    <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>{{ location }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button id="update-chart2" class="bg-primary hover:bg-blue-900 text-white rounded-button px-4 py-2 text-sm flex items-center">
+                        <i class="ri-refresh-line mr-2"></i>
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- First Chart -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="flex justify-between mb-4">
+                    <h3 id="chart1-title" class="text-lg font-semibold text-gray-800 dark:text-white">Traffic Violations</h3>
+                </div>
+                <div id="chart1" class="chart-container"></div>
+            </div>
+            <!-- Second Chart -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="flex justify-between mb-4">
+                    <h3 id="chart2-title" class="text-lg font-semibold text-gray-800 dark:text-white">Traffic Violations</h3>
+                </div>
+                <div id="chart2" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+            <button class="flex items-center px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 dark:text-blue-400 rounded-button whitespace-nowrap transition" onclick="location.href='{% url 'view_violations' %}'">
+                <i class="ri-arrow-left-line mr-2"></i>
+                Back to View Past Detection
+            </button>
+            <button class="flex items-center px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 dark:text-blue-400 rounded-button whitespace-nowrap transition" onclick="location.href='{% url 'dashboard' %}'">
+                <i class="ri-dashboard-line mr-2"></i>
+                Back to Dashboard
+            </button>
+            <button id="getRecommendations" class="flex items-center px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black rounded-button whitespace-nowrap transition">
+                <i class="ri-lightbulb-line mr-2"></i>
+                Get Recommendations
+            </button>
+        </div>
+        
+        <!-- Recommendations Section -->
+        <div id="recommendationsSection" class="mt-8 hidden">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">AI Recommendations</h3>
+                    <button id="closeRecommendations" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                        <i class="ri-close-line text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div id="loadingRecommendations" class="flex flex-col items-center justify-center py-8">
+                    <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-gray-600 dark:text-gray-400">Analyzing your data...</p>
+                </div>
+                
+                <div id="recommendationsContent" class="prose dark:prose-invert max-w-none hidden">
+                    <!-- AI recommendations will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="container mx-auto px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        © 2025 Traffic Violation Detection System. All rights reserved.
+      </div>
+    </footer>
+    
+    <script>
+        let charts = {};
+
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('success-message');
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        function updateChart(chartId, violationType, timePeriod, location) {
+            document.getElementById(chartId).classList.add('opacity-50');
+            document.getElementById(`${chartId}-title`).textContent = `${violationType}${location ? ' in ' + location : ''}`;
+            
+            const queryParams = new URLSearchParams({
+                violation_type: violationType,
+                time_period: timePeriod,
+                location: location || ''
+            });
+            
+            fetch(`/detect/statistics_data/?${queryParams}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const labels = data.labels;
+                    const values = data.values;
+                    
+                    document.getElementById(chartId).classList.remove('opacity-50');
+                    
+                    if (charts[chartId]) {
+                        charts[chartId].dispose();
+                    }
+                    
+                    const chart = echarts.init(document.getElementById(chartId));
+                    
+                    const option = {
+                        animation: false,
+                        tooltip: {
+                            trigger: 'axis',
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            borderColor: '#eee',
+                            textStyle: {
+                                color: '#1f2937'
+                            }
+                        },
+                        grid: {
+                            top: 10,
+                            right: 10,
+                            bottom: 30,
+                            left: 50
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: labels,
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#ddd'
+                                }
+                            },
+                            axisLabel: {
+                                color: '#1f2937'
+                            }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: 'Number of Violations',
+                            nameTextStyle: {
+                                color: '#1f2937'
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#ddd'
+                                }
+                            },
+                            axisLabel: {
+                                color: '#1f2937'
+                            },
+                            splitLine: {
+                                lineStyle: {
+                                    color: '#eee'
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: `${violationType} Violations`,
+                                type: 'bar',
+                                data: values,
+                                itemStyle: {
+                                    color: chartId === 'chart1' ? 'rgba(87, 181, 231, 1)' : 'rgba(251, 191, 114, 1)',
+                                    borderRadius: 4
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        color: chartId === 'chart1' ? 'rgba(87, 181, 231, 0.8)' : 'rgba(251, 191, 114, 0.8)'
+                                    }
+                                },
+                                label: {
+                                    show: true,
+                                    position: 'inside',
+                                    formatter: '{c}',
+                                    fontSize: 14,
+                                    fontWeight: 'bold'
+                                }
+                            }
+                        ]
+                    };
+                    
+                    chart.setOption(option);
+                    charts[chartId] = chart;
+                    showSuccessMessage();
+                })
+                .catch(error => {
+                    console.error('Error fetching statistics data:', error);
+                    document.getElementById(chartId).classList.remove('opacity-50');
+                    alert("Error fetching data. Please try again.");
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const violationType1 = document.getElementById('violation_type1').value;
+            const timePeriod1 = document.getElementById('time_period1').value;
+            const location1 = document.getElementById('location1').value;
+            updateChart('chart1', violationType1, timePeriod1, location1);
+            
+            const violationType2 = document.getElementById('violation_type2').value;
+            const timePeriod2 = document.getElementById('time_period2').value;
+            const location2 = document.getElementById('location2').value;
+            updateChart('chart2', violationType2, timePeriod2, location2);
+            
+            document.getElementById('update-chart1').addEventListener('click', function() {
+                const violationType = document.getElementById('violation_type1').value;
+                const timePeriod = document.getElementById('time_period1').value;
+                const location = document.getElementById('location1').value;
+                updateChart('chart1', violationType, timePeriod, location);
+            });
+            
+            document.getElementById('update-chart2').addEventListener('click', function() {
+                const violationType = document.getElementById('violation_type2').value;
+                const timePeriod = document.getElementById('time_period2').value;
+                const location = document.getElementById('location2').value;
+                updateChart('chart2', violationType, timePeriod, location);
+            });
+            
+            window.addEventListener('resize', function() {
+                for (const chartId in charts) {
+                    if (charts.hasOwnProperty(chartId)) {
+                        charts[chartId].resize();
+                    }
+                }
+            });
+            
+            const getRecommendationsBtn = document.getElementById('getRecommendations');
+            const recommendationsSection = document.getElementById('recommendationsSection');
+            const closeRecommendationsBtn = document.getElementById('closeRecommendations');
+            const loadingIndicator = document.getElementById('loadingRecommendations');
+            const recommendationsContent = document.getElementById('recommendationsContent');
+
+            getRecommendationsBtn.addEventListener('click', async function() {
+                recommendationsSection.classList.remove('hidden');
+                recommendationsSection.scrollIntoView({ behavior: 'smooth' });
+                
+                loadingIndicator.classList.remove('hidden');
+                recommendationsContent.classList.add('hidden');
+                
+                try {
+                    const chartsSection = document.querySelector('.grid.grid-cols-1.lg\\:grid-cols-2.gap-6.mb-8');
+                    const canvas = await html2canvas(chartsSection, {
+                        scale: 2,
+                        logging: false,
+                        useCORS: true
+                    });
+                    
+                    const imageData = canvas.toDataURL('image/png').split(',')[1];
+                    
+                    const response = await fetch('/detect/get_recommendations/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            image: imageData,
+                            chart1: {
+                                title: document.getElementById('chart1-title').textContent,
+                                labels: charts['chart1']?.getOption()?.xAxis[0]?.data,
+                                values: charts['chart1']?.getOption()?.series[0]?.data,
+				timePeriod: document.getElementById('time_period1').value
+                            },
+                            chart2: {
+                                title: document.getElementById('chart2-title').textContent,
+                                labels: charts['chart2']?.getOption()?.xAxis[0]?.data,
+                                values: charts['chart2']?.getOption()?.series[0]?.data,
+				timePeriod: document.getElementById('time_period2').value
+                            }
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to get recommendations');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    loadingIndicator.classList.add('hidden');
+                    recommendationsContent.classList.remove('hidden');
+                    recommendationsContent.innerHTML = markdownToHtml(data.recommendations);
+                    
+                } catch (error) {
+                    console.error('Error getting recommendations:', error);
+                    loadingIndicator.classList.add('hidden');
+                    recommendationsContent.classList.remove('hidden');
+                    recommendationsContent.innerHTML = `
+                        <div class="bg-red-100 text-red-700 p-4 rounded dark:bg-red-900 dark:text-red-300">
+                            <p>Sorry, we couldn't generate recommendations at this time. Please try again later.</p>
+                        </div>
+                    `;
+                }
+            });
+            
+            closeRecommendationsBtn.addEventListener('click', function() {
+                recommendationsSection.classList.add('hidden');
+            });
+            
+            function getCsrfToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+            
+function markdownToHtml(markdown) {
+    if (!markdown) return '';
+
+    // Remove all hash symbols
+    markdown = markdown.replace(/#+\s*/g, '');
+
+    // Extract the recommendations section (section 4)
+    const recommendationRegex = /4\.\s*ACTIONABLE RECOMMENDATIONS[\s\S]*?(?=\n\d+\.|\n*$)/i;
+    const recommendationMatch = markdown.match(recommendationRegex);
+
+    let recommendationContent = '';
+    let remainingContent = markdown;
+
+    if (recommendationMatch) {
+        recommendationContent = recommendationMatch[0];
+        // Remove the recommendations section from the remaining content
+        remainingContent = markdown.replace(recommendationContent, '');
+    }
+
+    // Process the non-recommendation content
+    let html = '';
+    if (remainingContent.trim()) {
+        html = processContent(remainingContent);
+    }
+
+    // Process and add the recommendation section with special styling
+    if (recommendationContent) {
+        const processedRecommendation = processContent(recommendationContent);
+        html += `<div class="recommendation-section">${processedRecommendation}</div>`;
+    }
+
+    return html;
+
+            function processContent(content) {
+        if (!content) return '';
+
+        // Replace markdown elements with HTML
+        let processed = content
+            .replace(/\*\*(\d+)\.\s*(.*?)\*\*/g, '<h2 class="text-xl font-bold mt-4 mb-2 text-gray-800 dark:text-white">$1. $2</h2>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/^- (.*)/gm, '<li class="text-gray-800 dark:text-gray-200">$1</li>')
+            .replace(/<\/li>\n<li/g, '</li><li');
+
+        // Convert lists to proper HTML
+        if (processed.includes('<li')) {
+            processed = processed.replace(/(<li.*<\/li>)/s, '<ul class="list-disc pl-5 my-2">$1</ul>');
+        }
+
+        // Add paragraph tags to text blocks
+        return processed.split('\n\n').map(para => {
+            if (!para.trim()) return '';
+            if (!para.startsWith('<h') && !para.startsWith('<ul')) {
+                return `<p class="my-2 text-gray-800 dark:text-gray-200">${para}</p>`;
+            }
+            return para;
+        }).join('');
+    }
+}
+        });
+        
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+          document.getElementById('toggleIcon').classList.remove('ri-moon-line');
+          document.getElementById('toggleIcon').classList.add('ri-sun-line');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          const toggleBtn = document.getElementById('themeToggle');
+          const icon = document.getElementById('toggleIcon');
+          const htmlEl = document.documentElement;
+
+          toggleBtn.addEventListener('click', () => {
+            if (htmlEl.classList.contains('dark')) {
+              htmlEl.classList.remove('dark');
+              icon.classList.remove('ri-sun-line');
+              icon.classList.add('ri-moon-line');
+              localStorage.setItem('theme', 'light');
+            } else {
+              htmlEl.classList.add('dark');
+              icon.classList.remove('ri-moon-line');
+              icon.classList.add('ri-sun-line');
+              localStorage.setItem('theme', 'dark');
+            }
+          });
+        });
+    </script>
+</body>
+</html>
